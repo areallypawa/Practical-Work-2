@@ -12,6 +12,7 @@ using namespace std::chrono;
 #define RESET   "\033[0m"
 
 const int LEN_ARRAY = 5;
+const string Sort = "quick";
 const int BREAK_CODE = 993;
 
 void clear() {
@@ -45,6 +46,7 @@ void print_main_menu(int *array, bool &is_array) {
 	cout << " | 1 - Создать массив                        |" << endl;
 
 	if (is_array) {
+		
 		cout << " | 2 - Вывести массив                        |" << endl;
 		cout << " | 3 - Сортировка массива                    |" << endl;
 		cout << " | 4 - Мин/Макс элементы                     |" << endl;
@@ -53,6 +55,7 @@ void print_main_menu(int *array, bool &is_array) {
 		cout << " | 7 - Кол-во > b (в отсорт.)                |" << endl;
 		cout << " | 8 - Поиск числа (бинарный + линейный)     |" << endl;
 		cout << " | 9 - Обмен элементов (с таймером)          |" << endl;
+		cout << " | 10 - Interpolation search VS Binary Search|" << endl;
 	}
 	else {
 		cout << GREY;
@@ -64,6 +67,7 @@ void print_main_menu(int *array, bool &is_array) {
 		cout << " | 7 - Кол-во > b (в отсорт.)         [lock] |" << endl;
 		cout << " | 8 - Поиск числа                    [lock] |" << endl;
 		cout << " | 9 - Обмен элементов                [lock] |" << endl;
+		cout << " | 10 - Interpolation search VS\n | Binary Search                      [lock] |" << endl;
 		cout << RESET;
 	}
 
@@ -107,29 +111,6 @@ void print_array_menu(int *array, int *array_copy, bool &flag) {
 	}
 }
 
-//void print_sort_array_menu() {
-//	clear();
-//	int user_choice;
-//	cout << "   ===========================";
-//	cout << "\n| 1 - Bubble sort";
-//	cout << "\n| 2 - Shaker sort\n";
-//	cin >> user_choice;
-//
-//	if (cin.fail()) {
-//		cin.clear();
-//		cin.ignore(numeric_limits<streamsize>::max(), '\n');
-//	}
-//
-//	switch (user_choice) {
-//	case 1:
-//		create_auto_array(array);
-//		break;
-//	case 2:
-//		create_hand_array(array);
-//		break;
-//	}
-//}
-
 void copy_array(int* array, int* array_copy) {
 	for (int i = 0; i < LEN_ARRAY; ++i) {
 		array_copy[i] = array[i];
@@ -168,6 +149,29 @@ int binary_search(int *arr, int &target) {
 	return -1;
 }
 
+int interpolation_search(int* arr, int &target) {
+	int left = 0;
+	int right = LEN_ARRAY - 1;
+
+	while (left <= right && target >= arr[left] && target <= arr[right]) {
+		if (left == right) {
+			if (arr[left] == target) return left;
+			return -1;
+		}
+
+		int pos = left + ((double)(target - arr[left]) * (right - left)) / (arr[right] - arr[left]);
+
+		if (arr[pos] == target)
+			return pos;
+		else if (arr[pos] < target)
+			left = pos + 1;
+		else
+			right = pos - 1;
+	}
+
+	return -1; 
+}
+
 void quick_sort(int *arr, int  st, int en, bool& flag) {
 
 	flag = true;
@@ -190,9 +194,79 @@ void quick_sort(int *arr, int  st, int en, bool& flag) {
 	}
 }
 
+void bubble_sort(int* arr, bool& flag) {
+	flag = true;
+	for (int i = 0; i < LEN_ARRAY; i++) {
+		for (int j = 0; j < LEN_ARRAY - i - 1; j++) {
+			if (arr[j+1] < arr[j]) {
+				swap(arr[j+1], arr[j]);
+			}
+		}
+	}
+}
+
+void shaker_sort(int* arr, bool& flag) {
+	flag = true;
+	int left = 0, right = LEN_ARRAY - 1;
+	while (left <= right) {
+		// Проход слева направо
+		for (int i = left; i < right; ++i) {
+			if (arr[i] > arr[i + 1]) swap(arr[i], arr[i + 1]);
+		}
+		--right;
+
+		// Проход справа налево
+		for (int i = right; i > left; --i) {
+			if (arr[i] < arr[i - 1]) swap(arr[i], arr[i - 1]);
+		}
+		--left;
+	}
+}
+
+void insertion_sort(int* arr, bool& flag) {
+	flag = true;
+	for (int i = 1; i < LEN_ARRAY; i++) {
+		int key = arr[i];
+		int j = i - 1;
+		// pos ffor key
+		while (j >= 0 && arr[j] > key) {
+			arr[j + 1] = arr[j];
+			j--;
+		}
+		arr[j + 1] = key;
+	}
+}
+
+void selection_sort(int* arr, bool& flag) {
+	for (int i = 0; i < LEN_ARRAY - 1; ++i) {
+		int minIdx = i;
+		// mini
+		for (int j = i + 1; j < LEN_ARRAY; ++j) {
+			if (arr[j] < arr[minIdx]) {
+				minIdx = j;
+			}
+		}
+		swap(arr[i], arr[minIdx]);
+	}
+}
+
 void chek_array_sort(int* array, bool& array_already_sort) {
 	if (!array_already_sort) {
-		quick_sort(array, 0, LEN_ARRAY - 1, array_already_sort);
+		if (Sort == "quick") {
+			quick_sort(array, 0, LEN_ARRAY - 1, array_already_sort);
+		}
+		else if (Sort == "bubble") {
+			bubble_sort(array, array_already_sort);
+		}
+		else if (Sort == "shaker") {
+			shaker_sort(array, array_already_sort);
+		}
+		else if (Sort == "insert") {
+			insertion_sort(array, array_already_sort);
+		}
+		else if (Sort == "select") {
+			selection_sort(array, array_already_sort);
+		}
 	}
 }
 
@@ -253,7 +327,11 @@ int main() {
 					// Sort Array + print time
 				{
 					auto start = high_resolution_clock::now();
-					quick_sort(array, 0, LEN_ARRAY - 1, array_already_sort);
+
+					chek_array_sort(array, array_already_sort);
+					//quick_sort(array, 0, LEN_ARRAY - 1, array_already_sort);
+					//bubble_sort(array, array_already_sort);
+
 					auto end = high_resolution_clock::now();
 					auto duration = duration_cast<nanoseconds>(end - start).count();
 					cout << "Сортировка завершена за " << duration << " наносекунд.\n";
@@ -412,6 +490,7 @@ int main() {
 					break;
 				}
 				case 9:
+				{
 					int i, j;
 					cout << "Введи индексы элементов: ";
 					cin >> i >> j;
@@ -445,6 +524,47 @@ int main() {
 					pause();
 					break;
 				}
+
+				case 10:
+					// IDZ
+					chek_array_sort(array, array_already_sort);
+					int target;
+					cout << "Target: ";
+					cin >> target;
+
+					if (cin.fail()) {
+						cin.clear();
+						cin.ignore(numeric_limits<streamsize>::max(), '\n');
+						continue;
+					}
+
+					auto start1 = high_resolution_clock::now();
+					int binResult = binary_search(array, target);
+					auto end1 = high_resolution_clock::now();
+					auto duration1 = duration_cast<nanoseconds>(end1 - start1).count();
+
+					auto start2 = high_resolution_clock::now();
+					int interpResult = interpolation_search(array, target);
+					auto end2 = high_resolution_clock::now();
+					auto duration2 = duration_cast<nanoseconds>(end2 - start2).count();
+
+					if (binResult != -1)
+						cout << "Бинарный поиск: элемент найден на позиции " << binResult << endl;
+					else
+						cout << "Бинарный поиск: элемент не найден." << endl;
+
+					if (interpResult != -1)
+						cout << "Интерполяционный поиск: элемент найден на позиции " << interpResult << endl;
+					else
+						cout << "Интерполяционный поиск: элемент не найден." << endl;
+
+					cout << "\n\nBinary Search завершен за " << duration1 << " наносекунд.\n";
+					cout << "\Interpolation Search завершен за " << duration2 << " наносекунд.\n";
+
+					pause();
+					break;
+				}
+
 			}
 			else {
 				continue;
